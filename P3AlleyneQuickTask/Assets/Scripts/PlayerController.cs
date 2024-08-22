@@ -1,10 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+
 
 public class PlayerController : MonoBehaviour
 {
+    private float horizontal;
+    private float speed = 8f;
+    private float jumpingPower = 16f;
+    private bool isFacingRight = true;
+
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private LayerMask groundLayer;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -14,29 +23,39 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float horizontal = 0.0f;
-        if (Keyboard.current.leftArrowKey.isPressed)
+        horizontal = Input.GetAxisRaw("Horizontal");
+
+        if (Input.GetButtonDown("Jump") && IsGrounded())
         {
-            horizontal = -1.0f;
-        }
-        else if (Keyboard.current.rightArrowKey.isPressed)
-        {
-            horizontal = 1.0f;
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
         }
 
-        float vertical = 0.0f;
-        if (Keyboard.current.upArrowKey.isPressed)
+        if (Input.GetButtonUp("Jump") && rb.velocity.y > 0f)
         {
-            vertical = 1.0f;
-        }
-        else if (Keyboard.current.downArrowKey.isPressed)
-        {
-            vertical = -1.0f;
+            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.5f);
         }
 
-        Vector2 position = transform.position;
-        position.x = position.x + 0.1f * horizontal;
-        position.x = position.x +0.1f * vertical;
-        transform.position = position;
+        Flip();
+    }
+
+    private void FixedUpdate()
+    {
+        rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+    }
+
+    private bool IsGrounded()
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+    }
+
+    private void Flip()
+    {
+        if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
+        {
+            isFacingRight = !isFacingRight;
+            Vector3 localScale = transform.localScale;
+            localScale.x *= -1f;
+            transform.localScale = localScale;
+        }
     }
 }
