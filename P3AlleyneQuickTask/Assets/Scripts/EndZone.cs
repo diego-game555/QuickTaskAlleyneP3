@@ -17,7 +17,7 @@ public class EndZone : MonoBehaviour
         
     }
 
-    void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter2D(Collider2D other)
     {
         gameManager.GameOver();
         Debug.Log("Collision");
